@@ -1,0 +1,12 @@
+/adm/
+/desktop/
+.sass-cache
+build
+coverage
+.DS_Store
+*.sublime-*
+node_modules
+bower_components
+datastore*
+.idea
+Thumbs.db
