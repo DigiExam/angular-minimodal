@@ -97,8 +97,3 @@ gulp.task("test", function(callback) {
 		configFile: config.karma.file
 	}, handleTestError(callback))
 });
-
-gulp.task("serve", ["default"], r.serve({
-	root: ["example", "bower_components", "dist"],
-	port: 8085
-}));
