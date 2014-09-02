@@ -61,24 +61,19 @@ gulp.task("clean", function() {
 var jsTask = function(isDist)
 {
 	var dir = isDist ? dest.dir.dist : dest.dir.build;
-	var stream = gulp.src(src.js)
+
+	return gulp.src(src.js)
 		.pipe(r.coffeelint(config.coffeelint))
 		.pipe(r.coffeelint.reporter())
 		.pipe(r.coffeelint.reporter("fail").on("error", handleError))
+		.pipe(r.sourcemaps.init())
 		.pipe(r.coffee().on("error", handleError))
-		.pipe(r.concat(dest.file.main));
-		//.pipe(gulp.dest(dir));
-
-	if(isDist)
-	{
-		stream = stream.pipe(r.sourcemaps.init())
-			.pipe(r.uglify({mangle: false}))
-			.pipe(r.sourcemaps.write("./", { sourceRoot: sourceRoot }))
-			.pipe(r.rename(dest.file.min))
-			.pipe(gulp.dest(dir))
-	}
-
-	return stream;
+		.pipe(r.concat(dest.file.min))
+		// Mangle will shorten variable names which breaks the AngularJS dependency injection.
+		// TODO: Use a build tool to preserve the important variables instead of disabling mangle.
+		.pipe(r.uglify({ mangle: false }))
+		.pipe(r.sourcemaps.write("./", {sourceRoot: sourceRoot}))
+		.pipe(gulp.dest(dir));
 }
 
 gulp.task("js", function() {
