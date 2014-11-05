@@ -8,9 +8,19 @@ angular.module("angular-minimodal", []).provider "$modal", ->
 					throw new Error "$modal could not find path '" + path + "'"
 				return angular.element response.data
 
+		defaultOptions =
+			dismissEscape: true
+
 		angular.extend @, {
 
 			show: (options)->
+				options = angular.extend defaultOptions, options
+
+				if not options?
+					throw new Error "angular-minimodal: No options provided"
+
+				if typeof options.templateUrl isnt "string"
+					throw new Error "angular-minmodal: Invalid templateUrl"
 
 				deferred = $q.defer()
 				instance =
@@ -21,9 +31,9 @@ angular.module("angular-minimodal", []).provider "$modal", ->
 					result: deferred.promise
 
 				getModalPromise = getModal options.templateUrl
-				getModalPromise.then (modal)->
-
-					document.body.appendChild modal[0]
+				getModalPromise.then ($modal)->
+					modal = $modal[0]
+					document.body.appendChild modal
 
 					if(options.controller)
 						locals =
@@ -31,15 +41,22 @@ angular.module("angular-minimodal", []).provider "$modal", ->
 							$modalInstance: instance
 
 						controller = $controller options.controller, locals
-						modal.data "$ngControllerController", controller
-						modal.children().data "$ngControllerController", controller
+						$modal.data "$ngControllerController", controller
+						$modal.children().data "$ngControllerController", controller
 
-					$compile(modal) locals.$scope
-					modal[0].showModal()
+					$compile($modal) locals.$scope
+
+					if options.dismissEscape
+						modal.oncancel = ->
+							instance.reject()
+
+					if modal.showModal?
+						modal.showModal()
 
 					deferred.promise.finally ->
-						modal[0].close()
-						modal.remove()
+						if modal.close?
+							modal.close()
+						$modal.remove()
 
 				return instance
 
