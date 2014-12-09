@@ -1,6 +1,6 @@
 angular.module("angular-minimodal", []).provider "$modal", ->
 
-	this.$get = ["$http", "$q", "$controller", "$compile", "$rootScope", ($http, $q, $controller, $compile, $rootScope, $templateCache)->
+	this.$get = ["$http", "$q", "$controller", "$compile", "$rootScope", "$templateCache", ($http, $q, $controller, $compile, $rootScope, $templateCache)->
 
 		getModal = (path)->
 			deferred = $q.defer()
