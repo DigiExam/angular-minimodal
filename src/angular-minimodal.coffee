@@ -1,12 +1,18 @@
 angular.module("angular-minimodal", []).provider "$modal", ->
 
-	this.$get = ["$http", "$q", "$controller", "$compile", "$rootScope", ($http, $q, $controller, $compile, $rootScope)->
+	this.$get = ["$http", "$q", "$controller", "$compile", "$rootScope", ($http, $q, $controller, $compile, $rootScope, $templateCache)->
 
 		getModal = (path)->
-			$http.get(path).then (response)->
-				if response.status isnt 200
-					throw new Error "$modal could not find path '" + path + "'"
-				return angular.element response.data
+			deferred = $q.defer()
+			cacheData = $templateCache.get path
+			if cacheData? and cacheData.length > 0
+				deferred.resolve angular.element(cacheData)
+			else
+				$http.get(path).then (response)->
+					if response.status isnt 200
+						throw new Error "$modal could not find path '" + path + "'"
+					return angular.element response.data
+			return deferred.promise
 
 		defaultOptions =
 			dismissEscape: true
