@@ -7,12 +7,12 @@ angular.module("angular-minimodal", []).provider "$modal", ->
 			cacheData = $templateCache.get path
 			if cacheData? and cacheData.length > 0
 				deferred.resolve angular.element(cacheData)
+				return deferred.promise
 			else
-				$http.get(path).then (response)->
+				return $http.get(path).then (response)->
 					if response.status isnt 200
 						throw new Error "$modal could not find path '" + path + "'"
 					return angular.element response.data
-			return deferred.promise
 
 		defaultOptions =
 			dismissEscape: true
