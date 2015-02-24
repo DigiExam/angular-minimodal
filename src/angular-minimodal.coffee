@@ -26,10 +26,12 @@ angular.module("angular-minimodal", []).provider "$modal", ->
 			return promise
 
 		hideModal = (instance)->
-			instance._modal?.close()
+			if instance._modal?.open
+				instance._modal.close()
 
 		showModal = (instance)->
-			instance._modal?.showModal()
+			if !instance._modal?.open
+				instance._modal.showModal()
 
 		removeModal = (instance)->
 			for ins, i in _instances
