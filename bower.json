@@ -1,10 +1,8 @@
 {
   "name": "angular-minimodal",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "private": true,
   "devDependencies": {
-    "angular": "~1.2.6",
-    "angular-mocks": "~1.2.16",
-    "jasmine-underscore": "EvilOatmeal/jasmine-underscore"
+    "angular": "~1.2.6"
   }
 }
