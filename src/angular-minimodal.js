@@ -61,15 +61,19 @@
 					instance.modal.showModal();
 			}
 			
-			function removeModal(instance)
+			function removeModal(instance) { _instances.splice(_instances.indexOf(instance), 1); }
+			
+			function createInstance(deferred)
 			{
-				var ins, i;
-				for(i = 0; i < _instances.length; ++i)
-				{
-					ins = _instances[i];
-					if(ins.id === instance.id)
-						_instances.splice(i, 1);
-				}
+				return {
+					id: getId(),
+					modal: null,
+					result: deferred.promise,
+					resolve: function(v) { deferred.resolve(v); },
+					reject: function(v) { deferred.reject(v); },
+					hide: function() { hideModal(this); },
+					show: function() { showModal(this); }
+				};
 			}
 			
 			function show(options)
@@ -84,42 +88,20 @@
 					
 				var deferred = $q.defer();
 				
-				var instance = {
-					id: getId(),
-					modal: null,
-					result: deferred.promise,
-					resolve: function(v)
-					{
-						deferred.resolve(v);
-					},
-					reject: function(v)
-					{
-						deferred.reject(v);
-					},
-					hide: function()
-					{
-						hideModal(this);
-					},
-					show: function()
-					{
-						showModal(this);
-					}
-				};
+				var instance = createInstance(deferred);
 				
 				deferred.promise.finally(function()
 				{
-					if(instance.modal.close != null)
-						instance.modal.close();
-						
+					(instance.modal.close || angular.noop)();
 					removeModal(instance);
-					angular.element(instance.modal).remove();
+					instance.modal.parentNode.removeChild(instance.modal);
 				});
-				
-				_instances.push(instance);
 				
 				getModalTemplate(options.templateUrl)
 					.then(function($modal)
 					{
+						_instances.push(instance);
+						
 						var modal = $modal[0];
 						instance.modal = modal;
 						
