@@ -113,7 +113,7 @@
 						
 					removeModal(instance);
 					angular.element(instance.modal).remove();
-				})
+				});
 				
 				_instances.push(instance);
 				
