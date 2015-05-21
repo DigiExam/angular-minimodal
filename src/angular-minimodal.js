@@ -23,7 +23,7 @@
 		
 		function AngularMiniModalGetter($http, $q, $controller, $compile, $rootScope, $templateCache)
 		{
-			angular.extend(this, { show: show, clear: clear });
+			angular.extend(this, { show: show });
 			
 			var defaultOptions = {
 				dismissEscape: true
@@ -67,7 +67,7 @@
 			
 			function onModalClose(instance)
 			{
-				if(instance.$$modal.close != null)
+				if(instance.$$modal.close != null && instance.$$modal.open)
 					instance.$$modal.close();
 				instance.$$modal.parentNode.removeChild(instance.$$modal);
 				_instances.shift();
@@ -86,12 +86,6 @@
 					hide: function() { hideModal(this.$$modal); },
 					show: function() { showModal(this.$$modal); }
 				};
-			}
-			
-			function clear()
-			{
-				for(var i = 0; i < _instances.length; ++i)
-					_instances[i].reject();
 			}
 			
 			function create(options)
