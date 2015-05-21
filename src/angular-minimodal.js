@@ -23,20 +23,24 @@
 		
 		function AngularMiniModalGetter($http, $q, $controller, $compile, $rootScope, $templateCache)
 		{
+			angular.extend(this, { show: show, clear: clear });
+			
 			var defaultOptions = {
 				dismissEscape: true
 			};
 			
 			var _instances = [];
+			var _currentActiveInstance = null;
+			var _hasPendingModal = false; 
 			
-			function getModalTemplateSuccess(response)
+			function requestModalTemplateSuccess(response)
 			{
 				if(response.status !== 200)
 					throw new Error("angular-minimodal: Could not load template.");
 				return angular.element(response.data);
 			}
 			
-			function getModalTemplate(path)
+			function requestModalTemplate(path)
 			{
 				var deferred = $q.defer(),
 					promise = deferred.promise,
@@ -45,65 +49,63 @@
 					deferred.resolve(angular.element(cacheData));
 				else
 					promise = $http.get(path)
-						.then(getModalTemplateSuccess);
+						.then(requestModalTemplateSuccess);
 				return promise;
 			}
 			
-			function hideModal(instance)
+			function hideModal(modal)
 			{
-				if(instance.modal != null && instance.modal.open)
-					instance.modal.close();
+				if(modal != null && modal.open)
+					modal.close();
 			}
 			
-			function showModal(instance)
+			function showModal(modal)
 			{
-				if(instance.modal != null && !instance.modal.open)
-					instance.modal.showModal();
+				if(modal != null && !modal.open)
+					modal.showModal();
 			}
 			
-			function removeModal(instance) { _instances.splice(_instances.indexOf(instance), 1); }
+			function onModalClose(instance)
+			{
+				if(instance.$$modal.close != null)
+					instance.$$modal.close();
+				instance.$$modal.parentNode.removeChild(instance.$$modal);
+				_instances.shift();
+				if(_instances.length > 0)
+					_instances[0].show();
+			}
 			
 			function createInstance(deferred)
 			{
 				return {
-					id: getId(),
-					modal: null,
+					$$id: getId(),
+					$$modal: null,
 					result: deferred.promise,
-					resolve: function(v) { deferred.resolve(v); },
-					reject: function(v) { deferred.reject(v); },
-					hide: function() { hideModal(this); },
-					show: function() { showModal(this); }
+					resolve: function(v) { deferred.resolve(v); onModalClose(this); },
+					reject: function(v) { deferred.reject(v); onModalClose(this); },
+					hide: function() { hideModal(this.$$modal); },
+					show: function() { showModal(this.$$modal); }
 				};
 			}
 			
-			function show(options)
+			function clear()
 			{
-				options = angular.extend(defaultOptions, options);
-				
-				if(options == null)
-					throw new Error("angular-minimodal: No options provided.");
-					
-				if(typeof(options.templateUrl) !== "string")
-					throw new Error("angular-minimodal: Invalid templateUrl.");
-					
-				var deferred = $q.defer();
-				
-				var instance = createInstance(deferred);
-				
-				deferred.promise.finally(function()
-				{
-					(instance.modal.close || angular.noop)();
-					removeModal(instance);
-					instance.modal.parentNode.removeChild(instance.modal);
-				});
-				
-				getModalTemplate(options.templateUrl)
+				for(var i = 0; i < _instances.length; ++i)
+					_instances[i].reject();
+			}
+			
+			function create(options)
+			{
+				return requestModalTemplate(options.templateUrl)
 					.then(function($modal)
 					{
-						_instances.push(instance);
+						var deferred = $q.defer();
+						var instance = createInstance(deferred);
+						
+						_instances.unshift(instance);
 						
 						var modal = $modal[0];
-						instance.modal = modal;
+						instance.$$modal = modal;
 						
 						document.body.appendChild(modal);
 						
@@ -123,14 +125,46 @@
 						
 						if(options.dismissEscape)
 							modal.oncancel = function() { instance.reject(); };
-						if(modal.showModal != null)
-							modal.showModal();
+							
+						return instance;
 					});
-				
-				return instance;
 			}
 			
-			angular.extend(this, { show: show });
+			function show(options)
+			{
+				if(_hasPendingModal)
+					throw new Error("angular-minimodal: Can't open new modal when a modal is pending.");
+				_hasPendingModal = true;
+				
+				options = angular.extend(defaultOptions, options);
+				
+				if(options == null)
+					throw new Error("angular-minimodal: No options provided.");
+					
+				if(typeof(options.templateUrl) !== "string")
+					throw new Error("angular-minimodal: Invalid templateUrl.");
+				
+				return create(options)
+					.then(function(instance)
+					{
+						if(_currentActiveInstance != null && _currentActiveInstance != instance)
+						{
+							_currentActiveInstance.hide();
+						}
+						
+						_currentActiveInstance = instance;
+						
+						instance.show();
+						
+						return instance;
+					}, function()
+					{
+						_currentActiveInstance = null;
+					}).finally(function()
+					{
+						_hasPendingModal = false;	
+					});
+			}
 			
 			return this;
 		}
