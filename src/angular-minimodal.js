@@ -4,12 +4,12 @@
 	"use strict";
 	
 	angular.module("angular-minimodal", [])
-		.provider("$modal", AngularMiniModal);
+		.provider("$modal", AngularMiniModalProvider);
 		
 	var _id = 0;
 	function getId() { return ++_id; }
 	
-	function AngularMiniModal()
+	function AngularMiniModalProvider()
 	{
 		this.$get = [
 			"$http",
@@ -18,10 +18,10 @@
 			"$compile",
 			"$rootScope",
 			"$templateCache",
-			AngularMiniModalGetter
+			AngularMiniModal
 		];
 		
-		function AngularMiniModalGetter($http, $q, $controller, $compile, $rootScope, $templateCache)
+		function AngularMiniModal($http, $q, $controller, $compile, $rootScope, $templateCache)
 		{
 			angular.extend(this, { show: show });
 			
@@ -55,13 +55,13 @@
 			
 			function hideModal(modal)
 			{
-				if(modal != null && modal.open)
+				if(modal.open)
 					modal.close();
 			}
 			
 			function showModal(modal)
 			{
-				if(modal != null && !modal.open)
+				if(!modal.open)
 					modal.showModal();
 			}
 			
@@ -71,6 +71,11 @@
 					instance.$$modal.close();
 				instance.$$modal.parentNode.removeChild(instance.$$modal);
 				_instances.shift();
+				showPreviousModalIfExists();
+			}
+			
+			function showPreviousModalIfExists()
+			{
 				if(_instances.length > 0)
 					_instances[0].show();
 			}
@@ -142,9 +147,7 @@
 					.then(function(instance)
 					{
 						if(_currentActiveInstance != null && _currentActiveInstance != instance)
-						{
 							_currentActiveInstance.hide();
-						}
 						
 						_currentActiveInstance = instance;
 						
@@ -154,6 +157,7 @@
 					}, function()
 					{
 						_currentActiveInstance = null;
+						showPreviousModalIfExists();
 					}).finally(function()
 					{
 						_hasPendingModal = false;	
