@@ -8,7 +8,7 @@ var util = require("gulp-util");
 var sourcemaps = require("gulp-sourcemaps");
 var concat = require("gulp-concat");
 var uglify = require("gulp-uglify");
-var rimraf = require("gulp-rimraf");
+var del = require("del");
 var rename = require("gulp-rename");
 
 var src = {
@@ -42,8 +42,7 @@ gulp.task("watch", ["default"], function()
 
 gulp.task("clean", function()
 {
-	return gulp.src(dest.dir.build, { read: false })
-		.pipe(rimraf());
+	return del([dest.dir.build + "*.js"]);
 });
 
 function jsTask(isDist)
