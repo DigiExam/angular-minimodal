@@ -13,6 +13,10 @@
     "gulp-sourcemaps": "~1.1.5",
     "gulp-uglify": "~0.3.2",
     "gulp-util": "~3.0.0",
+    "jasmine-core": "^2.3.4",
+    "karma": "^0.12.33",
+    "karma-jasmine": "^0.3.5",
+    "karma-phantomjs-launcher": "^0.1.4",
     "run-sequence": "~0.3.7"
   }
 }

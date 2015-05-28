@@ -1,4 +1,4 @@
-/* global process */
+/* global process, __dirname */
 "use strict";
 
 var gulp = require("gulp");
@@ -10,6 +10,11 @@ var concat = require("gulp-concat");
 var uglify = require("gulp-uglify");
 var del = require("del");
 var rename = require("gulp-rename");
+var karma = require("karma").server;
+
+var config = {
+	karma: __dirname + "/karma.js"
+};
 
 var src = {
 	base: "./",
@@ -72,3 +77,11 @@ gulp.task("js-dist", function()
 });
 
 gulp.task("dist", ["js-dist"]);
+
+gulp.task("test", function(done)
+{
+	karma.start({
+		configFile: __dirname + "/karma.js",
+		singleRun: true
+	}, done);
+});
