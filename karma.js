@@ -18,7 +18,8 @@ module.exports = function(config)
 			"tests/*.test.js"
 		],
 
-		browsers: ["PhantomJS"],
+		// Cannot use PhantomJS or Firefox HTMLDialogElement does not exist
+		browsers: ["Chrome"],
 
 		captureTimeout: 60000,
 		logLevel: "INFO",
