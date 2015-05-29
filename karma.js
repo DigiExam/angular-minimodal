@@ -18,13 +18,13 @@ module.exports = function(config)
 			"tests/*.test.js"
 		],
 
-		/*preprocessors: {
-			"src/*.js": "coverage"
+		preprocessors: {
+			"src/*.js": ["coverage"]
 		},
 
 		reporters: [
-			"coverage"
-		],*/
+			"progress", "coverage"
+		],
 
 		// Cannot use PhantomJS or Firefox HTMLDialogElement does not exist
 		browsers: ["Chrome"],
