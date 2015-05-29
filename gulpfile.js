@@ -85,3 +85,12 @@ gulp.task("test", function(done)
 		singleRun: true
 	}, done);
 });
+
+gulp.task("test-watch", function(done)
+{
+	karma.start({
+		configFile: __dirname + "/karma.js",
+		singleRun: false,
+		autoWatch: true
+	});
+});
