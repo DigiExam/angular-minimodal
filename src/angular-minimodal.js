@@ -39,10 +39,10 @@
 					promise = deferred.promise,
 					cacheData = $templateCache.get(path);
 				if(cacheData != null && cacheData.length > 0)
-					deferred.resolve(angular.element(cacheData));
+					deferred.resolve(angular.element(cacheData)[0])
 				else
 					promise = $http.get(path)
-						.then(getModalTemplateSuccess);
+						.then(getModalTemplateSuccess, getModalTemplateFail);
 				return promise;
 			}
 
@@ -90,11 +90,6 @@
 				};
 			}
 
-			function removeFromInstances(instance)
-			{
-				_instances.splice(_instances.indexOf(instance), 1);
-			}
-
 			function create(options)
 			{
 				return getModalTemplate(options.templateUrl)
@@ -112,9 +107,6 @@
 
 				options = angular.extend(defaultOptions, options);
 
-				if(options == null)
-					throw new Error("angular-minimodal: No options provided.");
-
 				if(typeof(options.templateUrl) !== "string")
 					throw new Error("angular-minimodal: Invalid templateUrl.");
 
@@ -127,21 +119,26 @@
 
 			function getModalTemplateSuccess(response)
 			{
-				if(response.status !== 200)
-					throw new Error("angular-minimodal: Could not load template.");
 				return angular.element(response.data)[0];
+			}
+
+			function getModalTemplateFail(response)
+			{
+				var e = 'angular-minimodal: Could not load template. Server responded %s "%d".'
+					.replace("%s", response.status)
+					.replace("%d", response.data);
+				return $q.reject(
+					new Error(e)
+				);
 			}
 
 			function requestModalTemplateSuccess(options, modal)
 			{
+				var $modal = angular.element(modal);
 				var deferred = $q.defer();
 				var instance = createInstance(deferred);
 
-				_instances.unshift(instance);
-
 				instance.$$modal = modal;
-
-				document.body.appendChild(modal);
 
 				var locals = {
 					$scope: options.$scope || $rootScope.$new(),
@@ -159,6 +156,9 @@
 
 				if(options.dismissEscape)
 					modal.oncancel = function() { instance.reject(); };
+
+				document.body.appendChild(modal);
+				_instances.unshift(instance);
 
 				return instance;
 			}
@@ -187,8 +187,6 @@
 
 			function createModalFail(ex)
 			{
-				if(_instances.indexOf(_currentActiveInstance) > -1)
-					_instances.shift();
 				_currentActiveInstance = null;
 				showPreviousModalIfExists();
 				return $q.reject(ex);
