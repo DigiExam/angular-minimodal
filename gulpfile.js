@@ -24,7 +24,8 @@ var src = {
 var dest = {
 	dir: {
 		build: "build/",
-		dist: "dist/"
+		dist: "dist/",
+		coverage: "coverage/"
 	},
 	file: "angular-minimodal-${version}"
 };
@@ -40,20 +41,21 @@ gulp.task("default", function(callback)
 	);
 });
 
-gulp.task("watch", ["default"], function()
+gulp.task("watch", ["default", "test-watch"], function()
 {
 	gulp.watch(src.js, ["js"]);
 });
 
 gulp.task("clean", function()
 {
-	return del([dest.dir.build + "*.js"]);
+	return del([dest.dir.build + "*", dest.dir.coverage + "*"]);
 });
 
 function jsTask(isDist)
 {
 	var dir = isDist ? dest.dir.dist : dest.dir.build;
-	var name = isDist ? dest.file.replace("${version}", pkg.version) : dest.file.replace("${version}", "latest");
+	var v = isDist ? pkg.version : "latest";
+	var name = dest.file.replace("${version}", v);
 	var ext = ".js";
 
 	return gulp.src(src.js)
