@@ -32,7 +32,11 @@ module.exports = function(config)
 		captureTimeout: 60000,
 		logLevel: "INFO",
 		autoWatch: false,
-		colors: true
+		colors: true,
+
+		coverageReporter: {
+			subdir: "."
+		}
 
 	});
 };
