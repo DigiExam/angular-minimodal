@@ -23,7 +23,6 @@
 	var template1 = "path/to/template1.html";
 	var template2 = "path/to/template2.html";
 	var faultyTemplate1 = "path/to/faulty-template1.html";
-	var faultyTemplate2 = "path/to/faulty-template2.html";
 
 	describe("$modal", function()
 	{
@@ -133,6 +132,21 @@
 				$httpBackend.flush();
 			});
 
+			it("should fail gracefully if provided controller is not valid", function()
+			{
+				$httpBackend.expectGET(template1).respond(200, "<dialog></dialog>");
+
+				$modal.show({
+					templateUrl: template1,
+					controller: {}
+				}).then(null, function(ex)
+				{
+					expect(isErrorObject(ex)).toBe(true);
+				});
+
+				$httpBackend.flush();
+			});
+
 			it("should throw an error if a modal is already pending", function()
 			{
 				$httpBackend.expectGET(template1).respond(200, "<dialog></dialog>");
@@ -213,17 +227,60 @@
 			// Faulty means that the template has no showModal-method or a close-method
 			it("throws an error if the template is faulty", function()
 			{
-				var promise;
+				$httpBackend.expectGET(faultyTemplate1).respond(200, "<alert></alert>");
 
-				$httpBackend.expectGET("path/to/faulty-template1.html").respond(200, "<alert></alert>");
-
-				promise = $modal.show({
-					templateUrl: "path/to/faulty-template1.html"
+				$modal.show({
+					templateUrl: faultyTemplate1
+				}).then(null, function(ex)
+				{
+					expect(isErrorObject(ex)).toBe(true);
 				});
 
-				promise.catch(function(error)
+				$httpBackend.flush();
+			});
+
+			it("should not bind the modals oncancel-property if options.dismissEscape is falsy", function()
+			{
+				$httpBackend.expectGET(template1).respond(200, "<dialog></dialog>");
+
+				$modal.show({
+					templateUrl: template1,
+					dismissEscape: false // This is the default value, but I like the clarity
+				}).then(function(instance)
 				{
-					expect(isErrorObject(error)).toBe(true);
+					expect(instance.$$modal.oncancel).toBe(null);
+				});
+
+				$httpBackend.flush();
+			});
+
+			it("should bind the modals oncancel-property if options.dismissEscape is truthy", function()
+			{
+				$httpBackend.expectGET(template1).respond(200, "<dialog></dialog>");
+
+				$modal.show({
+					templateUrl: template1,
+					dismissEscape: true
+				}).then(function(instance)
+				{
+					expect(instance.$$modal.oncancel).not.toBe(null);
+				});
+
+				$httpBackend.flush();
+			});
+
+			it("should call instance.reject if modal.oncancel is triggered", function()
+			{
+				$httpBackend.expectGET(template1).respond(200, "<dialog></dialog>");
+
+				$modal.show({
+					templateUrl: template1,
+					dismissEscape: true
+				}).then(function(instance)
+				{
+					spyOn(instance, "reject");
+					instance.$$modal.oncancel();
+					expect(instance.reject).toHaveBeenCalled();
 				});
 
 				$httpBackend.flush();
@@ -232,14 +289,117 @@
 
 		describe("$modalInstance", function()
 		{
-			it("has a resolve method", function()
+			var t = {};
+			beforeEach(function()
 			{
-				expect(true).toBe(true);
+				t.onResolve = angular.noop;
+				t.onReject = angular.noop;
+
+				$httpBackend.expectGET(template1).respond(200, "<dialog></dialog>");
 			});
 
-			it("has a reject method", function()
+			describe(".resolve()", function()
 			{
-				expect(true).toBe(true);
+				it("will resulve the modals result", function()
+				{
+					spyOn(t, "onResolve");
+
+					$modal.show({
+						templateUrl: template1
+					}).then(function(instance)
+					{
+						instance.result.then(t.onResolve);
+						instance.resolve(true);
+					});
+
+					$httpBackend.flush();
+
+					expect(t.onResolve).toHaveBeenCalledWith(true);
+				});
+			});
+
+			describe(".reject()", function()
+			{
+				it("will reject the modals result", function()
+				{
+					spyOn(t, "onReject");
+
+					$modal.show({
+						templateUrl: template1
+					}).then(function(instance)
+					{
+						instance.result.then(null, t.onReject);
+						instance.reject(false);
+					});
+
+					$httpBackend.flush();
+
+					expect(t.onReject).toHaveBeenCalledWith(false);
+				});
+			});
+
+			describe(".hide()", function()
+			{
+				it("will hide the modal", function()
+				{
+					$modal.show({
+						templateUrl: template1
+					}).then(function(instance)
+					{
+						expect(instance.$$modal.open).toBe(true);
+						instance.hide();
+						expect(instance.$$modal.open).toBe(false);
+					});
+
+					$httpBackend.flush();
+				});
+
+				it("should do nothing if modal is already hidden", function()
+				{
+					$modal.show({
+						templateUrl: template1
+					}).then(function(instance)
+					{
+						instance.hide();
+						spyOn(instance.$$modal, "close");
+						instance.hide();
+						expect(instance.$$modal.close).not.toHaveBeenCalled();
+					});
+
+					$httpBackend.flush();
+				});
+			});
+
+			describe(".show()", function()
+			{
+				it("will show the modal", function()
+				{
+					$modal.show({
+						templateUrl: template1
+					}).then(function(instance)
+					{
+						instance.hide();
+						expect(instance.$$modal.open).toBe(false);
+						instance.show();
+						expect(instance.$$modal.open).toBe(true);
+					});
+
+					$httpBackend.flush();
+				});
+
+				it("should do nothing if the modal is already open", function()
+				{
+					$modal.show({
+						templateUrl: template1
+					}).then(function(instance)
+					{
+						spyOn(instance.$$modal, "showModal");
+						instance.show();
+						expect(instance.$$modal.showModal).not.toHaveBeenCalled();
+					});
+
+					$httpBackend.flush();
+				});
 			});
 		});
 	});
