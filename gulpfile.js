@@ -11,6 +11,7 @@ var uglify = require("gulp-uglify");
 var del = require("del");
 var rename = require("gulp-rename");
 var karma = require("karma").server;
+var jshint = require("gulp-jshint");
 
 var config = {
 	karma: __dirname + "/karma.js"
@@ -36,12 +37,25 @@ gulp.task("default", function(callback)
 {
 	runSequence(
 		"clean",
+		"jshint",
+		"test",
 		"js",
 		callback
 	);
 });
 
-gulp.task("watch", ["default", "test-watch"], function()
+gulp.task("dist", function(callback)
+{
+	runSequence(
+		"clean",
+		"jshint",
+		"test",
+		"js-dist",
+		callback
+	);
+});
+
+gulp.task("watch", ["default", "jshint", "test-watch"], function()
 {
 	gulp.watch(src.js, ["js"]);
 });
@@ -78,7 +92,12 @@ gulp.task("js-dist", function()
 	return jsTask(true);
 });
 
-gulp.task("dist", ["js-dist"]);
+gulp.task("jshint", function()
+{
+	return gulp.src(src.js)
+		.pipe(jshint())
+		.pipe(jshint.reporter("default"));
+});
 
 gulp.task("test", function(done)
 {
@@ -92,7 +111,6 @@ gulp.task("test-watch", function(done)
 {
 	karma.start({
 		configFile: __dirname + "/karma.js",
-		singleRun: false,
 		autoWatch: true
 	});
 });
