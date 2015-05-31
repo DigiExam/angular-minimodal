@@ -100,7 +100,14 @@
 
 			function onGetModalTemplateSuccess(response)
 			{
-				return angular.element(response.data)[0];
+				try
+				{
+					return angular.element(response.data);
+				}
+				catch(ex)
+				{
+					return $q.reject(ex);
+				}
 			}
 
 			function onGetModalTemplateFail(response)
@@ -113,12 +120,13 @@
 				);
 			}
 
-			function onRequestModalTemplateSuccess(options, modal)
+			function onRequestModalTemplateSuccess(options, $modal)
 			{
+				var modal = $modal[0];
+
 				if(modal.nodeName !== "DIALOG")
 					return $q.reject(new Error("angular-minimodal: Faulty template."));
 
-				var $modal = angular.element(modal);
 				var deferred = $q.defer();
 				var instance = createInstance(deferred);
 
@@ -181,7 +189,7 @@
 					promise = deferred.promise,
 					cacheData = $templateCache.get(path);
 				if(typeof(cacheData) === "string" && cacheData.length > 0)
-					deferred.resolve(angular.element(cacheData)[0]);
+					deferred.resolve(angular.element(cacheData));
 				else
 					promise = $http.get(path)
 						.then(onGetModalTemplateSuccess, onGetModalTemplateFail);
