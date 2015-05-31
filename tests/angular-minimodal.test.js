@@ -113,6 +113,20 @@
 				});
 			});
 
+			it("fails when fetching an empty template", function()
+			{
+				$httpBackend.expectGET(template1).respond(200, "div");
+
+				$modal.show({
+					templateUrl: template1
+				}).then(null, function(ex)
+				{
+					expect(isErrorObject(ex)).toBe(true);
+				});
+
+				$httpBackend.flush();
+			});
+
 			it("should use a controller if one is provided in options", function(done)
 			{
 				$httpBackend.expectGET(template1).respond(200, "<dialog>{{testString}}</dialog>");
