@@ -48,24 +48,18 @@
 
 			function hideModal(modal)
 			{
-				if(typeof(modal.close) !== "function")
-					throw new Error("angular-minimodal: Faulty template. No close-method exists.");
 				if(modal.open)
 					modal.close();
 			}
 
 			function showModal(modal)
 			{
-				if(typeof(modal.showModal) !== "function")
-					throw new Error("angular-minimodal: Faulty template. No showModal-method exists.");
 				if(!modal.open)
 					modal.showModal();
 			}
 
 			function onModalClose(instance)
 			{
-				if(instance.$$modal.close != null && instance.$$modal.open)
-					instance.$$modal.close();
 				instance.$$modal.parentNode.removeChild(instance.$$modal);
 				_instances.shift();
 				showPreviousModalIfExists();
@@ -134,6 +128,9 @@
 
 			function requestModalTemplateSuccess(options, modal)
 			{
+				if(modal.nodeName !== "DIALOG")
+					return $q.reject(new Error("angular-minimodal: Faulty template."));
+
 				var $modal = angular.element(modal);
 				var deferred = $q.defer();
 				var instance = createInstance(deferred);
@@ -147,7 +144,17 @@
 
 				if(options.controller)
 				{
-					var controller = $controller(options.controller, locals);
+					var controller;
+
+					try
+					{
+						var controller = $controller(options.controller, locals);
+					}
+					catch(ex)
+					{
+						return $q.reject(ex);
+					}
+
 					$modal.data("$ngControllerController", controller);
 					$modal.children().data("$ngControllerController", controller);
 				}
@@ -165,22 +172,11 @@
 
 			function createModalSuccess(instance)
 			{
-				try
-				{
-					if(_currentActiveInstance != null && _currentActiveInstance != instance)
-						_currentActiveInstance.hide();
+				if(_currentActiveInstance != null && _currentActiveInstance != instance)
+					_currentActiveInstance.hide();
 
-					_currentActiveInstance = instance;
-					instance.show();
-				}
-				catch(ex)
-				{
-					_instances.shift();
-					instance.$$modal.parentNode.removeChild(instance.$$modal);
-					_currentActiveInstance = null;
-					showPreviousModalIfExists();
-					return $q.reject(ex);
-				}
+				_currentActiveInstance = instance;
+				instance.show();
 
 				return instance;
 			}
