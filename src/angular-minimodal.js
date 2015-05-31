@@ -33,17 +33,31 @@
 			var _currentActiveInstance = null;
 			var _hasPendingModal = false;
 
-			function getModalTemplate(path)
+			function show(options)
 			{
-				var deferred = $q.defer(),
-					promise = deferred.promise,
-					cacheData = $templateCache.get(path);
-				if(cacheData != null && cacheData.length > 0)
-					deferred.resolve(angular.element(cacheData)[0])
-				else
-					promise = $http.get(path)
-						.then(getModalTemplateSuccess, getModalTemplateFail);
-				return promise;
+				if(_hasPendingModal)
+					throw new Error("angular-minimodal: Can't open new modal when a modal is pending.");
+				_hasPendingModal = true;
+
+				options = angular.extend(defaultOptions, options);
+
+				if(typeof(options.templateUrl) !== "string")
+					throw new Error("angular-minimodal: Invalid templateUrl.");
+
+				return create(options)
+					.then(onCreateModalSuccess, onCreateModalFail).finally(function()
+					{
+						_hasPendingModal = false;
+					});
+			}
+
+			function create(options)
+			{
+				return getModalTemplate(options.templateUrl)
+					.then(function(modal)
+					{
+						return onRequestModalTemplateSuccess(options, modal);
+					});
 			}
 
 			function hideModal(modal)
@@ -56,13 +70,6 @@
 			{
 				if(!modal.open)
 					modal.showModal();
-			}
-
-			function onModalClose(instance)
-			{
-				instance.$$modal.parentNode.removeChild(instance.$$modal);
-				_instances.shift();
-				showPreviousModalIfExists();
 			}
 
 			function showPreviousModalIfExists()
@@ -84,39 +91,19 @@
 				};
 			}
 
-			function create(options)
+			function onModalClose(instance)
 			{
-				return getModalTemplate(options.templateUrl)
-					.then(function(modal)
-					{
-						return requestModalTemplateSuccess(options, modal);
-					});
+				instance.$$modal.parentNode.removeChild(instance.$$modal);
+				_instances.shift();
+				showPreviousModalIfExists();
 			}
 
-			function show(options)
-			{
-				if(_hasPendingModal)
-					throw new Error("angular-minimodal: Can't open new modal when a modal is pending.");
-				_hasPendingModal = true;
-
-				options = angular.extend(defaultOptions, options);
-
-				if(typeof(options.templateUrl) !== "string")
-					throw new Error("angular-minimodal: Invalid templateUrl.");
-
-				return create(options)
-					.then(createModalSuccess, createModalFail).finally(function()
-					{
-						_hasPendingModal = false;
-					});
-			}
-
-			function getModalTemplateSuccess(response)
+			function onGetModalTemplateSuccess(response)
 			{
 				return angular.element(response.data)[0];
 			}
 
-			function getModalTemplateFail(response)
+			function onGetModalTemplateFail(response)
 			{
 				var e = 'angular-minimodal: Could not load template. Server responded %s "%d".'
 					.replace("%s", response.status)
@@ -126,7 +113,7 @@
 				);
 			}
 
-			function requestModalTemplateSuccess(options, modal)
+			function onRequestModalTemplateSuccess(options, modal)
 			{
 				if(modal.nodeName !== "DIALOG")
 					return $q.reject(new Error("angular-minimodal: Faulty template."));
@@ -148,7 +135,7 @@
 
 					try
 					{
-						var controller = $controller(options.controller, locals);
+						controller = $controller(options.controller, locals);
 					}
 					catch(ex)
 					{
@@ -170,9 +157,9 @@
 				return instance;
 			}
 
-			function createModalSuccess(instance)
+			function onCreateModalSuccess(instance)
 			{
-				if(_currentActiveInstance != null && _currentActiveInstance != instance)
+				if(_currentActiveInstance !== null && _currentActiveInstance != instance)
 					_currentActiveInstance.hide();
 
 				_currentActiveInstance = instance;
@@ -181,11 +168,24 @@
 				return instance;
 			}
 
-			function createModalFail(ex)
+			function onCreateModalFail(ex)
 			{
 				_currentActiveInstance = null;
 				showPreviousModalIfExists();
 				return $q.reject(ex);
+			}
+
+			function getModalTemplate(path)
+			{
+				var deferred = $q.defer(),
+					promise = deferred.promise,
+					cacheData = $templateCache.get(path);
+				if(typeof(cacheData) === "string" && cacheData.length > 0)
+					deferred.resolve(angular.element(cacheData)[0]);
+				else
+					promise = $http.get(path)
+						.then(onGetModalTemplateSuccess, onGetModalTemplateFail);
+				return promise;
 			}
 
 			return this;
