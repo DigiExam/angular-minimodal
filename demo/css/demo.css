@@ -1,0 +1,51 @@
+body
+{
+	font-family: arial, sans-serif;
+}
+
+dialog
+{
+	border: 0;
+	box-shadow: 0 0 5px #999;
+}
+
+dialog footer
+{
+	text-align: right;
+	margin-top: 50px;
+}
+
+button
+{
+	background: #fff;
+	border: 1px solid #bbb;
+	border-radius: 3px;
+	padding: 5px 10px;
+	cursor: pointer;
+	outline: none;
+	font-size: 12px;
+}
+
+button:hover, button:focus
+{
+	background: #eee;
+}
+
+button.btn-primary
+{
+	background: #3a9dea;
+	border: 1px solid #3b75bc;
+	color: #fff;
+}
+
+button.btn-primary:hover, button.btn-primary:focus
+{
+	background: #2484cd;
+	border: 1px solid #1363a1;
+}
+
+.hint
+{
+	font-size: 12px;
+	font-style: italic;
+}
