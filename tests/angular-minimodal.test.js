@@ -8,13 +8,6 @@
 		return Object.prototype.toString.call(error) === "[object Error]";
 	}
 
-	function domStr(el)
-	{
-		var parent = document.createElement("div");
-		parent.appendChild(el);
-		return parent.innerHTML;
-	}
-
 	function TestController($scope, $modalInstance)
 	{
 		$scope.testString = "this is a test";
