@@ -4,6 +4,8 @@ A small but flexible library for dealing with modals in AngularJS
 
 # Demo
 
+[Visit the demo!](http://digiexam.github.io/angular-minimodal/)
+
 # Docs
 
 [Link to API Reference](https://github.com/DigiExam/angular-minimodal/tree/master/docs)
