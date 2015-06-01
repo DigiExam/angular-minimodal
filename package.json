@@ -1,6 +1,6 @@
 {
   "name": "angular-minimodal",
-  "version": "0.2.1",
+  "version": "1.0.0-rc.1",
   "scripts": {
     "postinstall": "./node_modules/.bin/bower install"
   },
