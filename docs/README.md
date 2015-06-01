@@ -18,7 +18,7 @@
 
 #### Params:
 
-* **Object** *options* - See [angular-minimodal Options](link/to/options)
+* **Object** *options* - See [angular-minimodal Options](https://github.com/DigiExam/angular-minimodal/blob/master/docs/OPTIONS.md)
 
 #### Returns:
 
