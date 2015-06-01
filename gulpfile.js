@@ -31,6 +31,12 @@ var dest = {
 	file: "angular-minimodal-${version}"
 };
 
+var clean = [
+	dest.dir.build + "*",
+	dest.dir.dist + "*",
+	dest.dir.coverave + "*"
+];
+
 var sourceRoot = "src";
 
 gulp.task("default", function(callback)
@@ -62,7 +68,7 @@ gulp.task("watch", ["default", "test-watch"], function()
 
 gulp.task("clean", function()
 {
-	return del([dest.dir.build + "*", dest.dir.coverage + "*"]);
+	return del(clean);
 });
 
 function jsTask(isDist)
