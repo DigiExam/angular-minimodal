@@ -55,7 +55,7 @@ gulp.task("dist", function(callback)
 	);
 });
 
-gulp.task("watch", ["default", "jshint", "test-watch"], function()
+gulp.task("watch", ["default", "test-watch"], function()
 {
 	gulp.watch(src.js, ["js"]);
 });
@@ -96,7 +96,7 @@ gulp.task("jshint", function()
 {
 	return gulp.src(src.js)
 		.pipe(jshint())
-		.pipe(jshint.reporter("default"));
+		.pipe(jshint.reporter("jshint-stylish"));
 });
 
 gulp.task("test", function(done)
