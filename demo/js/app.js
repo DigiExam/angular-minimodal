@@ -14,8 +14,6 @@
 		vm.showAlert = showAlert;
 		vm.showConfirm = showConfirm;
 
-		showConfirm();
-
 		function showAlert()
 		{
 			$modal.show({
