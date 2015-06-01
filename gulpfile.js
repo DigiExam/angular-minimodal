@@ -12,6 +12,7 @@ var del = require("del");
 var rename = require("gulp-rename");
 var karma = require("karma").server;
 var jshint = require("gulp-jshint");
+var serve = require("gulp-serve");
 
 var config = {
 	karma: __dirname + "/karma.js"
@@ -120,3 +121,8 @@ gulp.task("test-watch", function(done)
 		autoWatch: true
 	});
 });
+
+gulp.task("serve", serve({
+	root: [__dirname],
+	port: 8080
+}));
