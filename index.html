@@ -7,11 +7,21 @@
 	<script type="text/javascript" src="demo/js/app.js"></script>
 </head>
 <body ng-controller="DemoController as vm">
-	<button class="btn-primary" ng-click="vm.showAlert()">
-		Show alert
-	</button>
-	<button class="btn-primary" ng-click="vm.showConfirm()">
-		Show confirm
-	</button>
+	<div class="container">
+		<header>
+			<h1>angular-minimodal</h1>
+		</header>
+		<section class="content">
+			<p>angular-minimodal is a small and flexible module for dealing with modals in an AngularJS application.</p>
+			<p>This module is exclusively utilizing the HTML5 Dialog-tag, though that will change very soon when we introduce adapters for the most popular Javascript libraries which do modals, for example Bootstrap.</p>
+			<p>Current browser support can be found on <a href="http://caniuse.com/#feat=dialog" target="_blank">caniuse.com</a>.</p>
+			<button class="btn-primary" ng-click="vm.showAlert()">
+				Show alert
+			</button>
+			<button class="btn-primary" ng-click="vm.showConfirm()">
+				Show confirm
+			</button>
+		</section>
+	</div>
 </body>
 </html>

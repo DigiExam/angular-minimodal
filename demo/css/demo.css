@@ -1,6 +1,13 @@
 body
 {
 	font-family: arial, sans-serif;
+	margin: 50px;
+}
+
+.container
+{
+	width: 960px;
+	margin: 0 auto;
 }
 
 dialog
