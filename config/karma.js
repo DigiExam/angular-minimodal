@@ -13,6 +13,7 @@ module.exports = function(conf) {
 			"bower_components/angular-mocks/angular-mocks.js",
 			"node_modules/underscore/underscore.js",
 			"bower_components/jasmine-underscore/lib/jasmine-underscore.js",
+			"bower_components/dialog-polyfill/dialog-polyfill.js",
 
 			// Tests
 			"tests/*.coffee"

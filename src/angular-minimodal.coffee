@@ -56,6 +56,10 @@ angular.module("angular-minimodal", []).provider "$modal", ->
 						modal.oncancel = ->
 							instance.reject()
 
+					isChrome = (navigator.userAgent.toLowerCase().indexOf "chrome") > -1
+					if not isChrome
+						dialogPolyfill.registerDialog modal
+
 					if modal.showModal?
 						modal.showModal()
 

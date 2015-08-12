@@ -5,6 +5,7 @@
   "devDependencies": {
     "angular": "~1.2.6",
     "angular-mocks": "~1.2.16",
-    "jasmine-underscore": "EvilOatmeal/jasmine-underscore"
+    "jasmine-underscore": "EvilOatmeal/jasmine-underscore",
+    "dialog-polyfill": "~0.3.0"
   }
 }

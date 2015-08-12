@@ -23,7 +23,17 @@ var config = {
 
 var src = {
 	base: "./",
-	js: "src/*.coffee"
+	js: {
+		main: ["src/*.coffee"],
+		libs: [
+			"bower_components/dialog-polyfill/dialog-polyfill.js"
+		]
+	},
+	css: {
+		libs: [
+			"bower_components/dialog-polyfill/dialog-polyfill.css"
+		]
+	}
 };
 
 var dest = {
@@ -33,8 +43,8 @@ var dest = {
 		coverage: "coverage/"
 	},
 	file: {
-		main: "angular-minimodal-latest.js",
-		min: "angular-minimodal-latest.min.js"
+		main: "angular-minimodal-latest",
+		min: "angular-minimodal-latest.min"
 	}
 };
 
@@ -44,13 +54,14 @@ gulp.task("default", function(callback) {
 	runSequence(
 		"clean",
 		"js",
+		"css",
 		"test",
 		callback
 	);
 });
 
 gulp.task("watch", ["default"], function() {
-	gulp.watch(src.js, ["js"]);
+	gulp.watch(src.js.main, ["js", "css"]);
 });
 
 gulp.task("clean", function() {
@@ -58,21 +69,46 @@ gulp.task("clean", function() {
 			.pipe(r.rimraf())
 });
 
+var cssTask = function(isDist)
+{
+	var dir = isDist ? dest.dir.dist : dest.dir.build;
+	var file = isDist ? dest.file.min : dest.file.main;
+	var ext = "css";
+
+	return gulp.src(src.css.libs)
+		.pipe(r.bytediff.start())
+		.pipe(r.if(isDist, r.minifyCss()))
+		.pipe(r.bytediff.stop())
+		.pipe(r.concat(file + "." + ext))
+		.pipe(gulp.dest(dir));
+}
+
+gulp.task("css", function() {
+	return cssTask(false);
+});
+
+gulp.task("css-dist", function() {
+	return cssTask(true);
+});
+
 var jsTask = function(isDist)
 {
 	var dir = isDist ? dest.dir.dist : dest.dir.build;
+	var file = isDist ? dest.file.min : dest.file.main;
+	var ext = "js";
 
-	return gulp.src(src.js)
+	return gulp.src(src.js.main)
 		.pipe(r.coffeelint(config.coffeelint))
 		.pipe(r.coffeelint.reporter())
 		.pipe(r.coffeelint.reporter("fail").on("error", handleError))
-		.pipe(r.sourcemaps.init())
+		.pipe(r.if(isDist, r.sourcemaps.init()))
 		.pipe(r.coffee().on("error", handleError))
-		.pipe(r.concat(dest.file.min))
+		.pipe(r.addSrc(src.js.libs))
+		.pipe(r.concat(file + "." + ext))
 		// Mangle will shorten variable names which breaks the AngularJS dependency injection.
 		// TODO: Use a build tool to preserve the important variables instead of disabling mangle.
-		.pipe(r.uglify({ mangle: false }))
-		.pipe(r.sourcemaps.write("./", {sourceRoot: sourceRoot}))
+		.pipe(r.if(isDist, r.uglify({ mangle: false })))
+		.pipe(r.if(isDist, r.sourcemaps.write("./", {sourceRoot: sourceRoot})))
 		.pipe(gulp.dest(dir));
 }
 
@@ -85,7 +121,7 @@ gulp.task("js-dist", function()
 	return jsTask(true);
 });
 
-gulp.task("dist", ["js-dist"]);
+gulp.task("dist", ["js-dist", "css-dist"]);
 
 gulp.task("test", function(callback) {
 	karma.start({
